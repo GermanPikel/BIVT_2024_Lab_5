@@ -152,51 +152,38 @@ public class Program
         return index;
     }
 
+    public void solve(int firstSize, int secondSize, double[] A, double[] B) {
+        int iA = FindMaxindex(A);
+        int iB = FindMaxindex(B);
+        double s = 0; double k = 0;
+        if (firstSize - iA > secondSize - iB)
+        {
+            for (int i = iA + 1; i < A.Length; i++)
+            {
+                s += A[i]; k++;
+            }
+            A[iA] = s / k;
+        }
+        else
+        {
+            for (int i = iB + 1; i < B.Length; i++)
+            {
+                s += B[i]; k++;
+            }
+            B[iB] = s / k;
+        }
+    }
+
     public void Task_2_2(double[] A, double[] B)
     {
         // code here
 
-        if (ValidateArray(A, 9) && ValidateArray(B, 7)) { 
-            int iA = FindMaxindex(A);
-            int iB = FindMaxindex(B);
-            double s = 0; double k = 0;
-            if (9 - iA > 7 - iB)
-            {
-                for (int i = iA + 1; i < A.Length; i++)
-                {
-                    s += A[i]; k++;
-                }
-                A[iA] = s / k;
-            }
-            else {
-                for (int i = iB + 1; i < B.Length; i++)
-                {
-                    s += B[i]; k++;
-                }
-                B[iB] = s / k;
-            }
+        if (ValidateArray(A, 9) && ValidateArray(B, 7)) {
+            solve(9, 7, A, B);
         }
         else if (ValidateArray(A, 7) && ValidateArray(B, 9))
         {
-            int iA = FindMaxindex(A);
-            int iB = FindMaxindex(B);
-            double s = 0; double k = 0;
-            if (7 - iA > 9 - iB)
-            {
-                for (int i = iA + 1; i < A.Length; i++)
-                {
-                    s += A[i]; k++;
-                }
-                A[iA] = s / k;
-            }
-            else
-            {
-                for (int i = iB + 1; i < B.Length; i++)
-                {
-                    s += B[i]; k++;
-                }
-                B[iB] = s / k;
-            }
+            solve(7, 9, A, B);
         }
 
         // end
@@ -600,10 +587,7 @@ public class Program
         }
     }
 
-    public void Task_2_20(ref int[,] A, ref int[,] B)
-    {
-        // code here
-
+    public int[] GetColsWithNoZeros(ref int[,] A) {
         int kA = 0;
         for (int j = 0; j < A.GetLength(1); j++)
         {
@@ -615,29 +599,39 @@ public class Program
         {
             if (!(HasZeros(A, j))) { arrA[i++] = j; }
         }
+        return arrA;
+    }
 
-        int kB = 0;
-        for (int j = 0; j < B.GetLength(1); j++)
+    public void SortColsWithNoZeros(int[] arr1, int[] arr2) {
+        InsertSort(arr1);
+        InsertSort(arr2);
+    }
+
+    public void RemoveNoZerosCols(ref int[,] A, int[] arrA) {
+        foreach (int ind in arrA)
         {
-            if (!(HasZeros(B, j))) { kB++; }
-        }
-        int[] arrB = new int[kB];
-        i = 0;
-        for (int j = 0; j < B.GetLength(1); j++)
-        {
-            if (!(HasZeros(B, j))) { arrB[i++] = j; }
-        }
-
-        InsertSort(arrA); InsertSort(arrB);
-
-        foreach (int ind in arrA) {
             A = RemoveColumn(A, ind);
         }
+    }
 
-        foreach (int ind in arrB)
-        {
-            B = RemoveColumn(B, ind);
-        }
+    public void RemoveColsWithNoZeros(ref int[,] A, ref int[,] B, int[] arrA, int[] arrB) {
+
+        RemoveNoZerosCols(ref A, arrA);
+        RemoveNoZerosCols(ref B, arrB);
+
+    }
+
+    public void Task_2_20(ref int[,] A, ref int[,] B)
+    {
+        // code here
+
+        int[] arrA = null, arrB = null;
+        arrA = GetColsWithNoZeros(ref A);
+        arrB = GetColsWithNoZeros(ref B);
+
+        SortColsWithNoZeros(arrA, arrB);
+
+        RemoveColsWithNoZeros(ref A, ref B, arrA, arrB);
 
         // end
     }
@@ -842,47 +836,56 @@ public class Program
         return count_for_answer;
     }
 
-    public void Task_2_28b(int[] first, int[] second, ref int[,] answerFirst, ref int[,] answerSecond)
-    {
-        // code here
+    public void GetIntervals(int[] arr, ref int[,] answer) {
         int n, count_for_answer;
-        n = first.Length;
+        n = arr.Length;
         count_for_answer = 0;
-        answerFirst = new int[GetCountOfSequences(first), 2];
-        for (int i = 0; i < n; i++) {
-            int j = i + 1;
-            while (j < n) {
-                if (SequenceExists(first, i, j))
-                {
-                    answerFirst[count_for_answer, 0] = i;
-                    answerFirst[count_for_answer, 1] = j;
-                    count_for_answer++;
-                }
-                else { break; }
-                j++;
-            }
-        }
-
-        n = second.Length;
-        count_for_answer = 0;
-        answerSecond = new int[GetCountOfSequences(second), 2];
+        answer = new int[GetCountOfSequences(arr), 2];
         for (int i = 0; i < n; i++)
         {
             int j = i + 1;
             while (j < n)
             {
-                if (SequenceExists(second, i, j))
+                if (SequenceExists(arr, i, j))
                 {
-                    answerSecond[count_for_answer, 0] = i;
-                    answerSecond[count_for_answer, 1] = j;
+                    answer[count_for_answer, 0] = i;
+                    answer[count_for_answer, 1] = j;
                     count_for_answer++;
                 }
                 else { break; }
                 j++;
             }
         }
+    }
+
+    public void Task_2_28b(int[] first, int[] second, ref int[,] answerFirst, ref int[,] answerSecond)
+    {
+        // code here
+
+        GetIntervals(first, ref answerFirst);
+        GetIntervals(second, ref answerSecond);
 
         // end
+    }
+
+    public void GetLongestInterval(int[,] sequences, ref int[] answer) {
+        int maxi;
+        maxi = int.MinValue;
+
+        for (int i = 0; i < sequences.GetLength(0); i++)
+        {
+            if (sequences[i, 1] - sequences[i, 0] > maxi)
+            {
+                maxi = sequences[i, 1] - sequences[i, 0];
+                answer = new int[] { sequences[i, 0], sequences[i, 1] };
+            }
+        }
+
+    }
+
+    public void GetLongestIntervals(int[,] seqs1, ref int[] ans1, int[,] seqs2, ref int[] ans2) {
+        GetLongestInterval(seqs1, ref ans1);
+        GetLongestInterval(seqs2, ref ans2);
     }
 
     public void Task_2_28c(int[] first, int[] second, ref int[] answerFirst, ref int[] answerSecond)
@@ -891,25 +894,10 @@ public class Program
 
         int[,] sequencesFirst = null;
         int[,] sequencesSecond = null;
-        int maxi;
-        maxi = int.MinValue;
+
         Task_2_28b(first, second, ref sequencesFirst, ref sequencesSecond);
 
-        for (int i = 0; i < sequencesFirst.GetLength(0); i++) {
-            if (sequencesFirst[i, 1] - sequencesFirst[i, 0] > maxi) { 
-                maxi = sequencesFirst[i, 1] - sequencesFirst[i, 0];
-                answerFirst = new int[]{ sequencesFirst[i, 0], sequencesFirst[i, 1]}; }
-        }
-
-        maxi = int.MinValue;
-        for (int i = 0; i < sequencesSecond.GetLength(0); i++)
-        {
-            if (sequencesSecond[i, 1] - sequencesSecond[i, 0] > maxi)
-            {
-                maxi = sequencesSecond[i, 1] - sequencesSecond[i, 0];
-                answerSecond = new int[] { sequencesSecond[i, 0], sequencesSecond[i, 1] };
-            }
-        }
+        GetLongestIntervals(sequencesFirst, ref answerFirst, sequencesSecond, ref answerSecond);
 
         // end
     }
